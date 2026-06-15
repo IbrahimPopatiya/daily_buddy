@@ -1,0 +1,36 @@
+# Environment variables / secrets
+.env
+.env.*
+*.env
+env.local
+**/credentials.json
+**/*credentials*.json
+**/*secret*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+dailybuddy/
+
+# Databases
+*.db
+*.sqlite3
+*.sqlite
+
+# Storage / generated data
+storage/
+
+# Misc
+files.zip
+.pytest_cache/
+.mypy_cache/
+*.log
