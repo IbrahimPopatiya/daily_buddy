@@ -145,6 +145,22 @@ uvicorn src.main:app --reload
 
 ---
 
+## 🖼️ Screenshots
+
+### Ask a Query
+![Ask Query](public/ask_query.png)
+
+### Save Image
+![Image Save](public/image_save.png)
+
+### Memories
+![Memories](public/memories.png)
+
+### Save Text
+![Text Save](public/text_save.png)
+
+---
+
 ## 📜 License
 
 This project is for personal/educational use. Add a license of your choice.
