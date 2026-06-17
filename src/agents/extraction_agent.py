@@ -15,55 +15,59 @@ class ExtractionResult:
 class ExtractionAgent:
     def __init__(self, api_key: str):
         self.client = genai.Client(api_key=api_key)
-        self.model_id = "gemini-flash-latest"
-    
+        self.model_id = "gemini-2.5-flash"
+
     def extract_from_image(self, image_path: str) -> ExtractionResult:
-        """Extract structured data from image"""
         import PIL.Image
-        
+
         img = PIL.Image.open(image_path)
-        
-        prompt = """
-        Analyze this image and extract ALL visible information.
-        Return as JSON with:
-        - content_type: warranty|receipt|bill|other
-        - extracted_fields: dict with all key-value pairs
-        - confidence: float 0-1
-        """
-        
+
+        prompt = """Analyze this image and extract ALL visible information.
+You MUST respond with ONLY a JSON object (no markdown, no code fences) in this exact format:
+{
+  "content_type": "warranty" or "receipt" or "bill" or "other",
+  "extracted_fields": {"key": "value", ...},
+  "confidence": 0.0 to 1.0
+}"""
+
         response = self.client.models.generate_content(
             model=self.model_id,
-            contents=[prompt, img]
+            contents=[prompt, img],
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json"
+            )
         )
-        
+
         return self._parse_response(response.text, "image")
-    
+
     def extract_from_text(self, text: str) -> ExtractionResult:
-        """Extract from plain text"""
-        prompt = f"""
-        Extract structured information from this text:
-        {text}
-        
-        Return JSON with extracted fields and confidence.
-        """
-        
+        prompt = f"""Extract structured information from this text:
+"{text}"
+
+You MUST respond with ONLY a JSON object (no markdown, no code fences) in this exact format:
+{{
+  "content_type": "warranty" or "receipt" or "bill" or "other",
+  "extracted_fields": {{"key": "value", ...}},
+  "confidence": 0.0 to 1.0
+}}"""
+
         response = self.client.models.generate_content(
             model=self.model_id,
-            contents=prompt
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json"
+            )
         )
         return self._parse_response(response.text, "text")
-    
+
     def _parse_response(self, text: str, source: str) -> ExtractionResult:
-        """Parse Gemini response into structured format"""
-        import re
         try:
-            json_str = re.search(r'\{[\s\S]*\}', text).group(0)
-            data = json.loads(json_str)
-            
+            data = json.loads(text)
+
             return ExtractionResult(
                 type=data.get('content_type', 'unknown'),
                 extracted_data=data.get('extracted_fields', {}),
-                confidence_score=data.get('confidence', 0.0),
+                confidence_score=float(data.get('confidence', 0.0)),
                 raw_data=text
             )
         except Exception as e:

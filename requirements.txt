@@ -1,12 +1,14 @@
 google-genai
 sqlalchemy>=2.0.0
-psycopg2-binary>=2.9.0
-pinecone>=3.0.0
+python-dotenv>=1.0.0
+Pillow
+requests>=2.31.0
 fastapi>=0.109.0
 uvicorn>=0.27.0
-pydantic>=2.5.0
-python-dotenv>=1.0.0
-requests>=2.31.0
-pytest>=7.4.0
-pytest-asyncio>=0.21.0
-Pillow
+python-multipart>=0.0.6
+
+# Optional - only needed if using PostgreSQL
+# psycopg2-binary>=2.9.0
+
+# Optional - only needed if using Pinecone vector search
+# pinecone>=3.0.0

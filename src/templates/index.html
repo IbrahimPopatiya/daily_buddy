@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DailyBuddy</title>
+<style>
+  :root {
+    --bg: #0f0f13;
+    --surface: #1a1a24;
+    --surface2: #23233a;
+    --border: #2e2e4a;
+    --accent: #7c5cfc;
+    --accent-glow: #7c5cfc44;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --text: #e4e4ed;
+    --text2: #9393a8;
+    --radius: 14px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  .app {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 16px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 32px 0 24px;
+  }
+
+  .header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #7c5cfc, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+  }
+
+  .header p { color: var(--text2); font-size: 0.95rem; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 4px;
+    margin-bottom: 20px;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.2s;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 12px var(--accent-glow);
+  }
+
+  /* Panels */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .card h3 {
+    font-size: 1rem;
+    margin-bottom: 14px;
+    color: var(--text);
+  }
+
+  textarea, input[type="text"] {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    padding: 14px 16px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  textarea:focus, input[type="text"]:focus {
+    border-color: var(--accent);
+  }
+
+  textarea { min-height: 100px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 14px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 16px var(--accent-glow);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 24px var(--accent-glow);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* File upload */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .upload-zone input { display: none; }
+
+  .upload-zone .icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .upload-zone .label { color: var(--text2); font-size: 0.9rem; }
+  .upload-zone .filename {
+    margin-top: 8px;
+    color: var(--green);
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+
+  /* Result */
+  .result {
+    margin-top: 16px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    animation: fadeIn 0.3s;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .result-header {
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .result-success .result-header { background: #34d39922; color: var(--green); }
+  .result-warning .result-header { background: #fbbf2422; color: var(--yellow); }
+  .result-error .result-header { background: #f8717122; color: var(--red); }
+
+  .result-body {
+    background: var(--surface2);
+    padding: 16px;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  .result-body pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--text);
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 0.83rem;
+  }
+
+  /* Memory cards */
+  .memory-grid {
+    display: grid;
+    gap: 12px;
+  }
+
+  .memory-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .memory-item:hover { border-color: var(--accent); }
+
+  .memory-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-receipt { background: #7c5cfc33; color: #a78bfa; }
+  .badge-warranty { background: #34d39933; color: var(--green); }
+  .badge-bill { background: #fbbf2433; color: var(--yellow); }
+  .badge-other { background: #64748b33; color: #94a3b8; }
+
+  .memory-data { font-size: 0.85rem; color: var(--text2); line-height: 1.5; }
+  .memory-data strong { color: var(--text); }
+
+  .memory-time { font-size: 0.78rem; color: var(--text2); margin-top: 8px; opacity: 0.7; }
+
+  .confidence-bar {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    margin-top: 10px;
+    overflow: hidden;
+  }
+
+  .confidence-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--text2);
+  }
+
+  .empty-state .icon { font-size: 3rem; margin-bottom: 12px; display: block; }
+
+  .spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #fff4;
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Answer box */
+  .answer-box {
+    background: var(--surface2);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 18px 20px;
+    margin-top: 16px;
+    line-height: 1.7;
+    font-size: 0.92rem;
+    animation: fadeIn 0.3s;
+  }
+
+  .answer-box .sources {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--text2);
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>DailyBuddy</h1>
+    <p>Your personal knowledge manager — extract, store, and recall anything</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('text')">Text Extract</button>
+    <button class="tab" onclick="switchTab('image')">Image Upload</button>
+    <button class="tab" onclick="switchTab('query')">Ask Query</button>
+    <button class="tab" onclick="switchTab('memories')">Memories</button>
+  </div>
+
+  <!-- Text Panel -->
+  <div id="panel-text" class="panel active">
+    <div class="card">
+      <h3>Extract from Text</h3>
+      <textarea id="text-input" placeholder="e.g. I bought a Samsung TV for $599 from Best Buy on June 15 with 2 year warranty..."></textarea>
+      <button class="btn btn-primary" onclick="submitText()" id="btn-text">
+        Extract & Save
+      </button>
+      <div id="text-result"></div>
+    </div>
+  </div>
+
+  <!-- Image Panel -->
+  <div id="panel-image" class="panel">
+    <div class="card">
+      <h3>Extract from Image</h3>
+      <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+        <span class="icon">&#128247;</span>
+        <div class="label">Drop an image here or click to browse</div>
+        <div class="filename" id="file-name"></div>
+        <input type="file" id="file-input" accept="image/*" onchange="handleFile(this)">
+      </div>
+      <button class="btn btn-primary" onclick="submitImage()" id="btn-image">
+        Extract & Save
+      </button>
+      <div id="image-result"></div>
+    </div>
+  </div>
+
+  <!-- Query Panel -->
+  <div id="panel-query" class="panel">
+    <div class="card">
+      <h3>Search Your Memories</h3>
+      <input type="text" id="query-input" placeholder="e.g. What did I buy from Best Buy?" onkeydown="if(event.key==='Enter')submitQuery()">
+      <button class="btn btn-primary" onclick="submitQuery()" id="btn-query">
+        Search
+      </button>
+      <div id="query-result"></div>
+    </div>
+  </div>
+
+  <!-- Memories Panel -->
+  <div id="panel-memories" class="panel">
+    <div class="card">
+      <h3>Stored Memories</h3>
+      <button class="btn btn-primary" onclick="loadMemories()" style="margin-top:0;margin-bottom:16px">
+        Refresh
+      </button>
+      <div id="memories-list">
+        <div class="empty-state">
+          <span class="icon">&#128218;</span>
+          <div>No memories yet. Extract some text or images first!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', ['text','image','query','memories'][i] === name);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  if (name === 'memories') loadMemories();
+}
+
+function setLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  if (loading) {
+    btn.disabled = true;
+    btn._text = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner"></span> Processing...';
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = btn._text;
+  }
+}
+
+function renderResult(containerId, data) {
+  const el = document.getElementById(containerId);
+  if (data.error) {
+    el.innerHTML = `<div class="result result-error">
+      <div class="result-header">Error</div>
+      <div class="result-body"><pre>${esc(data.error)}</pre></div>
+    </div>`;
+    return;
+  }
+
+  const isSuccess = data.status === 'success';
+  const isLow = data.status === 'low_confidence';
+  const cls = isSuccess ? 'result-success' : isLow ? 'result-warning' : 'result-error';
+  const label = isSuccess ? 'Extracted & Saved' : isLow ? 'Low Confidence (not saved)' : data.status;
+
+  const fields = data.data || data.extracted_data || {};
+  let fieldsHtml = Object.entries(fields).map(([k,v]) => `<strong>${esc(k)}:</strong> ${esc(String(v))}`).join('<br>');
+
+  el.innerHTML = `<div class="result ${cls}">
+    <div class="result-header">${label} ${data.confidence != null ? '&mdash; ' + (data.confidence * 100).toFixed(0) + '% confidence' : ''}</div>
+    <div class="result-body">${fieldsHtml || '<pre>' + esc(JSON.stringify(data, null, 2)) + '</pre>'}</div>
+  </div>`;
+}
+
+async function submitText() {
+  const text = document.getElementById('text-input').value.trim();
+  if (!text) return;
+  setLoading('btn-text', true);
+  try {
+    const form = new FormData();
+    form.append('text', text);
+    const res = await fetch('/api/text', { method: 'POST', body: form });
+    renderResult('text-result', await res.json());
+  } catch (e) {
+    renderResult('text-result', { error: e.message });
+  }
+  setLoading('btn-text', false);
+}
+
+let selectedFile = null;
+
+function handleFile(input) {
+  selectedFile = input.files[0];
+  document.getElementById('file-name').textContent = selectedFile ? selectedFile.name : '';
+}
+
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => {
+  e.preventDefault();
+  dz.classList.remove('dragover');
+  if (e.dataTransfer.files.length) {
+    selectedFile = e.dataTransfer.files[0];
+    document.getElementById('file-name').textContent = selectedFile.name;
+    document.getElementById('file-input').files = e.dataTransfer.files;
+  }
+});
+
+async function submitImage() {
+  if (!selectedFile) return;
+  setLoading('btn-image', true);
+  try {
+    const form = new FormData();
+    form.append('file', selectedFile);
+    const res = await fetch('/api/image', { method: 'POST', body: form });
+    renderResult('image-result', await res.json());
+  } catch (e) {
+    renderResult('image-result', { error: e.message });
+  }
+  setLoading('btn-image', false);
+}
+
+async function submitQuery() {
+  const query = document.getElementById('query-input').value.trim();
+  if (!query) return;
+  setLoading('btn-query', true);
+  try {
+    const form = new FormData();
+    form.append('query', query);
+    const res = await fetch('/api/query', { method: 'POST', body: form });
+    const data = await res.json();
+    const el = document.getElementById('query-result');
+
+    if (data.error) {
+      el.innerHTML = `<div class="result result-error">
+        <div class="result-header">Error</div>
+        <div class="result-body"><pre>${esc(data.error)}</pre></div>
+      </div>`;
+    } else {
+      const srcCount = (data.sources || []).length;
+      el.innerHTML = `<div class="answer-box">
+        ${esc(data.answer || 'No answer found.')}
+        ${srcCount ? `<div class="sources">${srcCount} source(s) found &mdash; confidence: ${((data.confidence || 0) * 100).toFixed(0)}%</div>` : ''}
+      </div>`;
+    }
+  } catch (e) {
+    document.getElementById('query-result').innerHTML = `<div class="result result-error">
+      <div class="result-header">Error</div>
+      <div class="result-body"><pre>${esc(e.message)}</pre></div>
+    </div>`;
+  }
+  setLoading('btn-query', false);
+}
+
+async function loadMemories() {
+  const el = document.getElementById('memories-list');
+  el.innerHTML = '<div style="text-align:center;padding:24px"><span class="spinner"></span></div>';
+  try {
+    const res = await fetch('/api/memories');
+    const data = await res.json();
+    if (!data.memories || !data.memories.length) {
+      el.innerHTML = `<div class="empty-state"><span class="icon">&#128218;</span><div>No memories yet.</div></div>`;
+      return;
+    }
+    el.innerHTML = '<div class="memory-grid">' + data.memories.map(m => {
+      const badgeCls = 'badge-' + (m.type || 'other');
+      const fields = Object.entries(m.data || {}).map(([k,v]) => `<strong>${esc(k)}:</strong> ${esc(String(v))}`).join(' &bull; ');
+      const conf = m.confidence || 0;
+      const confColor = conf >= 0.8 ? 'var(--green)' : conf >= 0.5 ? 'var(--yellow)' : 'var(--red)';
+      const time = m.created_at ? new Date(m.created_at).toLocaleString() : '';
+      return `<div class="memory-item">
+        <div class="memory-meta">
+          <span class="badge ${badgeCls}">${esc(m.type || 'unknown')}</span>
+          <span class="badge badge-other">${esc(m.category || '')}</span>
+        </div>
+        <div class="memory-data">${fields}</div>
+        <div class="confidence-bar"><div class="confidence-fill" style="width:${conf*100}%;background:${confColor}"></div></div>
+        <div class="memory-time">${time}</div>
+      </div>`;
+    }).join('') + '</div>';
+  } catch (e) {
+    el.innerHTML = `<div class="empty-state">Error loading memories: ${esc(e.message)}</div>`;
+  }
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+</script>
+</body>
+</html>
